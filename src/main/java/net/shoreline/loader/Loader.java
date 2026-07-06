@@ -10,16 +10,14 @@ import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public class Loader implements
-		ClientModInitializer,
-		PreLaunchEntrypoint,
-		IMixinConfigPlugin
+public class Loader implements ClientModInitializer, PreLaunchEntrypoint, IMixinConfigPlugin
 {
 	private static final Logger LOGGER = LogManager.getLogger("Shoreline");
 	public static final String VERSION = "r1.0.2";
@@ -30,14 +28,7 @@ public class Loader implements
 	static
 	{
 		info("Loading Shoreline...");
-
-		info("Loaded Shoreline's dependant libraries.");
-
 		SESSION = UserSession.load();
-
-		info("Authenticated as " + SESSION.getUsername() + " [" + SESSION.getUserType() + "]");
-
-		info("Shoreline " + VERSION + " is up to date.");
 	}
 
 	@Override
@@ -59,29 +50,21 @@ public class Loader implements
 			Method init = shoreline.getDeclaredMethod("init");
 			if (!Modifier.isStatic(init.getModifiers()))
 			{
-				error("Shoreline entrypoint is invalid.");
-				return;
+				throw new IllegalStateException("net.shoreline.client.Shoreline#init() must be static");
 			}
 			init.setAccessible(true);
 			init.invoke(null);
 		}
-		catch (ClassNotFoundException e)
+		catch (InvocationTargetException e)
 		{
-			error("Shoreline main class missing: " + e.getMessage());
-		}
-		catch (NoSuchMethodException e)
-		{
-			error("Shoreline entrypoint missing: " + e.getMessage());
+			Throwable cause = e.getCause() != null ? e.getCause() : e;
+			LOGGER.error("[Shoreline] Shoreline.init() threw an exception:", cause);
+			throw new RuntimeException("Shoreline initialization failed", cause);
 		}
 		catch (Throwable t)
 		{
-			error("Shoreline failed to initialize: " + t);
-			Throwable c = t.getCause();
-			while (c != null)
-			{
-				error("  caused by: " + c);
-				c = c.getCause();
-			}
+			LOGGER.error("[Shoreline] Failed to bootstrap Shoreline:", t);
+			throw new RuntimeException("Shoreline bootstrap failed", t);
 		}
 	}
 

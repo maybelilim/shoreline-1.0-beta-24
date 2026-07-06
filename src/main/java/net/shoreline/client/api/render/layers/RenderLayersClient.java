@@ -110,11 +110,17 @@ public class RenderLayersClient implements Globals
             super(false);
             ((AccessorRenderPhase) this).hookSetBeginAction(() ->
             {
-                Managers.LIGHT_MAP.enable();
+                if (Managers.LIGHT_MAP != null)
+                {
+                    Managers.LIGHT_MAP.enable();
+                }
             });
             ((AccessorRenderPhase) this).hookSetEndAction(() ->
             {
-                Managers.LIGHT_MAP.disable();
+                if (Managers.LIGHT_MAP != null)
+                {
+                    Managers.LIGHT_MAP.disable();
+                }
             });
         }
     }

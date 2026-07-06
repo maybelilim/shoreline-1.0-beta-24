@@ -27,14 +27,10 @@ import net.shoreline.client.impl.manager.world.WaypointManager;
 import net.shoreline.client.impl.manager.world.sound.SoundManager;
 import net.shoreline.client.impl.manager.world.tick.TickManager;
 
-/**
- * @author linus
- * @since 1.0
- */
+import java.util.function.Supplier;
+
 public class Managers
 {
-    // Manager instances. Managers can be statically referenced after
-    // initialized. Managers will be initialized in this order.
     public static NetworkManager NETWORK;
     public static MacroManager MACRO;
     public static ModuleManager MODULE;
@@ -47,7 +43,6 @@ public class Managers
     public static InventoryManager INVENTORY;
     public static PositionManager POSITION;
     public static RotationManager ROTATION;
-    //public static NCPManager NCP;
     public static AntiCheatManager ANTICHEAT;
     public static MovementManager MOVEMENT;
     public static HoleManager HOLE;
@@ -61,78 +56,101 @@ public class Managers
     public static BlockManager BLOCK;
     public static HitboxManager HITBOX;
     public static PearlManager PEARL;
-    // The initialized state of the managers. If this is true, all managers
-    // have been initialized and the init process is complete. As a general
-    // rule, it is good practice to check this state before accessing instances.
+
     private static boolean initialized;
 
-    /**
-     * Initializes the manager instances. Should not be used if the
-     * managers are already initialized.
-     *
-     * @see #isInitialized()
-     */
     public static void init()
-    {
-        if (!isInitialized())
-        {
-            NETWORK = new NetworkManager();
-            MACRO = new MacroManager();
-            MODULE = new ModuleManager();
-            EVENT = new EventManager();
-            SOCIAL = new SocialManager();
-            WAYPOINT = new WaypointManager();
-            ACCOUNT = new AccountManager();
-            TICK = new TickManager();
-            INVENTORY = new InventoryManager();
-            POSITION = new PositionManager();
-            ROTATION = new RotationManager();
-            BLOCK = new BlockManager();
-            HITBOX = new HitboxManager();
-            PEARL = new PearlManager();
-            ANTICHEAT = new AntiCheatManager();
-            MOVEMENT = new MovementManager();
-            HOLE = new HoleManager();
-            TOTEM = new TotemManager();
-            INTERACT = new InteractionManager();
-            COMMAND = new CommandManager();
-            SOUND = new SoundManager();
-            SHADER = new ShaderManager();
-            LOOKUP = new LookupManager();
-            initialized = true;
-        }
-    }
-
-    /**
-     * Initializes final manager properties. Only runs if the Manager
-     * instances have been initialized.
-     *
-     * @see #init()
-     * @see #isInitialized()
-     */
-    public static void postInit()
     {
         if (isInitialized())
         {
-            MACRO.postInit();
-            ACCOUNT.postInit();
-            CAPES = new CapeManager();
-            LIGHT_MAP = new LightmapManager();
+            return;
         }
+
+        NETWORK = tryInit("NetworkManager", NetworkManager::new);
+        MACRO = tryInit("MacroManager", MacroManager::new);
+        MODULE = tryInit("ModuleManager", ModuleManager::new);
+        EVENT = tryInit("EventManager", EventManager::new);
+        SOCIAL = tryInit("SocialManager", SocialManager::new);
+        WAYPOINT = tryInit("WaypointManager", WaypointManager::new);
+        ACCOUNT = tryInit("AccountManager", AccountManager::new);
+        TICK = tryInit("TickManager", TickManager::new);
+        INVENTORY = tryInit("InventoryManager", InventoryManager::new);
+        POSITION = tryInit("PositionManager", PositionManager::new);
+        ROTATION = tryInit("RotationManager", RotationManager::new);
+        BLOCK = tryInit("BlockManager", BlockManager::new);
+        HITBOX = tryInit("HitboxManager", HitboxManager::new);
+        PEARL = tryInit("PearlManager", PearlManager::new);
+        ANTICHEAT = tryInit("AntiCheatManager", AntiCheatManager::new);
+        MOVEMENT = tryInit("MovementManager", MovementManager::new);
+        HOLE = tryInit("HoleManager", HoleManager::new);
+        TOTEM = tryInit("TotemManager", TotemManager::new);
+        INTERACT = tryInit("InteractionManager", InteractionManager::new);
+        COMMAND = tryInit("CommandManager", CommandManager::new);
+        SOUND = tryInit("SoundManager", SoundManager::new);
+        SHADER = tryInit("ShaderManager", ShaderManager::new);
+        LOOKUP = tryInit("LookupManager", LookupManager::new);
+
+        initialized = true;
     }
 
-    /**
-     * Returns <tt>true</tt> if the Manager instances have been initialized.
-     * This should always return <tt>true</tt> if {@link Shoreline#preInit()} has
-     * finished running.
-     *
-     * @return <tt>true</tt> if the Manager instances have been initialized
-     * @see Shoreline#preInit()
-     * @see #init()
-     * @see #initialized
-     */
+    public static void postInit()
+    {
+        if (!isInitialized())
+        {
+            return;
+        }
+
+        tryPostInit("MacroManager", MACRO, MacroManager::postInit);
+        tryPostInit("AccountManager", ACCOUNT, AccountManager::postInit);
+
+        CAPES = tryInit("CapeManager", CapeManager::new);
+        LIGHT_MAP = tryInit("LightmapManager", LightmapManager::new);
+    }
+
     public static boolean isInitialized()
     {
         return initialized;
+    }
+
+    private static <T> T tryInit(String name, Supplier<T> ctor)
+    {
+        try
+        {
+            T instance = ctor.get();
+            Shoreline.info("Initialized " + name);
+            return instance;
+        }
+        catch (Throwable t)
+        {
+            logFailure(name + " init", t);
+            return null;
+        }
+    }
+
+    private static <T> void tryPostInit(String name, T instance, java.util.function.Consumer<T> action)
+    {
+        if (instance == null)
+        {
+            return;
+        }
+        try
+        {
+            action.accept(instance);
+        }
+        catch (Throwable t)
+        {
+            logFailure(name + " postInit", t);
+        }
+    }
+
+    private static void logFailure(String what, Throwable t)
+    {
+        Shoreline.error("Failed to run " + what + ": " + t);
+        Throwable c = t.getCause();
+        while (c != null)
+        {
+            Shoreline.error("  caused by: " + c);
+            c = c.getCause();
+        }
     }
 }
