@@ -54,14 +54,19 @@ public class DropdownButton extends ConfigButton<Enum<?>>
             hoverAnimation.setState(state);
         }
         int hoverAlpha = (int) (80 * MathHelper.clamp(hoverAnimation.getFactor(), 0.0f, 1.0f));
-
-        rect(context, ClickGuiModule.getInstance().getColor(100 + hoverAlpha));
-
+        if (ClickGuiModule.getInstance().isGradient())
+        {
+            int start = ClickGuiModule.getInstance().getColor((int) ((100 + hoverAlpha) * 0.6f));
+            int end = ClickGuiModule.getInstance().getGradient((int) ((100 + hoverAlpha) * 0.6f));
+            RenderManager.fillGradientQuad(context, ix, iy, ix + (width * ClickGuiModule.CLICK_GUI_SCALE), iy + (height * ClickGuiModule.CLICK_GUI_SCALE), start, end, true);
+        }
+        else
+        {
+            rect(context, ClickGuiModule.getInstance().getColor(100 + hoverAlpha));
+        }
         int whiteText = -1;
         drawStringScaled(context, config.getName(), ix + (2.0f * ClickGuiModule.CLICK_GUI_SCALE), iy + (4.0f * ClickGuiModule.CLICK_GUI_SCALE), whiteText);
-
         float textLeng = RenderManager.textWidth(config.getName()) * ClickGuiModule.CLICK_GUI_SCALE;
-
         int grayText = 0xFFAAAAAA;
         drawStringScaled(context, " " + val, ix + (2.0F * ClickGuiModule.CLICK_GUI_SCALE) + textLeng, iy + (4.0F * ClickGuiModule.CLICK_GUI_SCALE), grayText);
     }
@@ -89,7 +94,6 @@ public class DropdownButton extends ConfigButton<Enum<?>>
                 index = index - 1 < 0 ? values.length - 1 : index - 1;
                 config.setValue(Enum.valueOf(val.getClass(), values[index]));
             }
-
             if (ClickGuiModule.getInstance().getSounds())
             {
                 Managers.SOUND.playSound(SoundManager.GUI_CLICK);
@@ -105,7 +109,6 @@ public class DropdownButton extends ConfigButton<Enum<?>>
     @Override
     public void mouseReleased(double mouseX, double mouseY, int button)
     {
-
     }
 
     /**
@@ -116,12 +119,10 @@ public class DropdownButton extends ConfigButton<Enum<?>>
     @Override
     public void keyPressed(int keyCode, int scanCode, int modifiers)
     {
-
     }
 
     @Override
     public void charTyped(char character, int modifiers)
     {
-
     }
 }

@@ -28,7 +28,6 @@ public class SliderButton<T extends Number> extends ConfigButton<T>
 {
     // Slider rounding scale
     private final int scale;
-
     private char[] buffer;
     private boolean typing;
     // Insertion point
@@ -73,14 +72,12 @@ public class SliderButton<T extends Number> extends ConfigButton<T>
         setHeight(RenderManager.textHeight() + 4.0f);
         x = ix;
         y = iy;
-
         boolean state = isWithin(mouseX, mouseY);
         if (state != hoverAnimation.getState())
         {
             hoverAnimation.setState(state);
         }
         int hoverAlpha = (int) (80 * MathHelper.clamp(hoverAnimation.getFactor(), 0.0f, 1.0f));
-
         //
         Number min = ((NumberConfig<T>) config).getMin();
         Number max = ((NumberConfig<T>) config).getMax();
@@ -140,14 +137,20 @@ public class SliderButton<T extends Number> extends ConfigButton<T>
             }
             float fill = (config.getValue().floatValue() - min.floatValue())
                     / (max.floatValue() - min.floatValue());
-            fill(context, ix, iy, (fill * width * ClickGuiModule.CLICK_GUI_SCALE), height * ClickGuiModule.CLICK_GUI_SCALE, ClickGuiModule.getInstance().getColor(100 + hoverAlpha));
+            if (ClickGuiModule.getInstance().isGradient())
+            {
+                int start = ClickGuiModule.getInstance().getColor((int) ((100 + hoverAlpha) * 0.6f));
+                int end = ClickGuiModule.getInstance().getGradient((int) ((100 + hoverAlpha) * 0.6f));
+                RenderManager.fillGradientQuad(context, ix, iy, ix + (fill * width * ClickGuiModule.CLICK_GUI_SCALE), iy + (height * ClickGuiModule.CLICK_GUI_SCALE), start, end, true);
+            }
+            else
+            {
+                fill(context, ix, iy, (fill * width * ClickGuiModule.CLICK_GUI_SCALE), height * ClickGuiModule.CLICK_GUI_SCALE, ClickGuiModule.getInstance().getColor(100 + hoverAlpha));
+            }
         }
-
         int whiteText = -1;
         drawStringScaled(context, typing ? new String(buffer) + getInsertionPoint() : config.getName(), ix + (2.0f * ClickGuiModule.CLICK_GUI_SCALE), iy + (4.0f * ClickGuiModule.CLICK_GUI_SCALE), whiteText);
-
         float textLeng = RenderManager.textWidth(config.getName()) * ClickGuiModule.CLICK_GUI_SCALE;
-
         if (!typing)
         {
             int grayText = 0xFFAAAAAA;
@@ -187,7 +190,6 @@ public class SliderButton<T extends Number> extends ConfigButton<T>
                     }
                     catch (NumberFormatException ignored)
                     {
-
                     }
                     typing = false;
                 }
@@ -196,7 +198,6 @@ public class SliderButton<T extends Number> extends ConfigButton<T>
                     typing = true;
                 }
             }
-
             if (ClickGuiModule.getInstance().getSounds())
             {
                 Managers.SOUND.playSound(SoundManager.GUI_CLICK);
@@ -216,7 +217,6 @@ public class SliderButton<T extends Number> extends ConfigButton<T>
     @Override
     public void mouseReleased(double mouseX, double mouseY, int button)
     {
-
     }
 
     /**
@@ -251,7 +251,6 @@ public class SliderButton<T extends Number> extends ConfigButton<T>
                     }
                     catch (NumberFormatException ignored)
                     {
-
                     }
                     if (config.getValue() instanceof Integer)
                     {

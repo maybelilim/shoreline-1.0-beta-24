@@ -15,7 +15,6 @@ import org.lwjgl.glfw.GLFW;
 public class SearchButton extends Button
 {
     public static String SEARCH_TEXT = null;
-
     private char[] buffer;
     private boolean typing;
     // Insertion point
@@ -48,14 +47,24 @@ public class SearchButton extends Button
         x = ix;
         y = iy;
         int unfilledColor = ClickGuiModule.getInstance().fixTransparency(0x33000000);
-        fill(context, ix + 1.0f, iy, 1.0f, getHeight(), ClickGuiModule.getInstance().getColor(1.7f));
-        fill(context, ix + getWidth() - 2.0f, iy, 1.0f, getHeight(), ClickGuiModule.getInstance().getColor(1.7f));
-        fill(context, ix + 1.0f, iy - 1.0f, getWidth() - 2.0f, 1.0f, ClickGuiModule.getInstance().getColor(1.7f));
-        fill(context, ix + 1.0f, iy + getHeight(), getWidth() - 2.0f, 1.0f, ClickGuiModule.getInstance().getColor(1.7f));
+        if (ClickGuiModule.getInstance().isGradient())
+        {
+            int start = ClickGuiModule.getInstance().getColor(1.7f);
+            int end = ClickGuiModule.getInstance().getGradient(1.7f);
+            fill(context, ix + 1.0f, iy, 1.0f, getHeight(), start);
+            fill(context, ix + getWidth() - 2.0f, iy, 1.0f, getHeight(), end);
+            RenderManager.fillGradientQuad(context, ix + 1.0f, iy - 1.0f, ix + 1.0f + (getWidth() - 2.0f), iy, start, end, true);
+            RenderManager.fillGradientQuad(context, ix + 1.0f, iy + getHeight(), ix + 1.0f + (getWidth() - 2.0f), iy + getHeight() + 1.0f, start, end, true);
+        }
+        else
+        {
+            fill(context, ix + 1.0f, iy, 1.0f, getHeight(), ClickGuiModule.getInstance().getColor(1.7f));
+            fill(context, ix + getWidth() - 2.0f, iy, 1.0f, getHeight(), ClickGuiModule.getInstance().getColor(1.7f));
+            fill(context, ix + 1.0f, iy - 1.0f, getWidth() - 2.0f, 1.0f, ClickGuiModule.getInstance().getColor(1.7f));
+            fill(context, ix + 1.0f, iy + getHeight(), getWidth() - 2.0f, 1.0f, ClickGuiModule.getInstance().getColor(1.7f));
+        }
         rect(context, unfilledColor);
-
         // drawBorder(context, ix + (3.0f * ClickGuiModule.CLICK_GUI_SCALE), iy + (3.5f * ClickGuiModule.CLICK_GUI_SCALE), getWidth(), getHeight(), ClickGuiModule.getInstance().getColor());
-
         int whiteText = -1;
         String renderText = typing ? new String(buffer) + getInsertionPoint() : "Search...";
         drawStringScaled(context, renderText, ix + (5.0f * ClickGuiModule.CLICK_GUI_SCALE), iy + (3.5f * ClickGuiModule.CLICK_GUI_SCALE), whiteText);
@@ -101,7 +110,6 @@ public class SearchButton extends Button
     @Override
     public void mouseReleased(double mouseX, double mouseY, int button)
     {
-
     }
 
     /**

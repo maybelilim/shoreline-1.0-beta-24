@@ -131,8 +131,6 @@ public class ModuleButton extends Button
         {
             scaledTime = 1.7f;
         }
-
-
         boolean state = isWithin(mouseX, mouseY);
         if (state != hoverAnimation.getState())
         {
@@ -142,10 +140,16 @@ public class ModuleButton extends Button
         boolean b1 = b2 && !getModule().getName().toLowerCase().contains(SearchButton.SEARCH_TEXT.toLowerCase());
         int hoverAlpha = (int) ((b1 ? 30 : 60) * MathHelper.clamp(hoverAnimation.getFactor(), 0.0f, 1.0f));
         int hoverAlpha2 = (int) ((b1 ? 25 : 50) * MathHelper.clamp(hoverAnimation.getFactor(), 0.0f, 1.0f));
-
         int unfilledColor = ClickGuiModule.getInstance().fixTransparency(new Color(hoverAlpha, hoverAlpha, hoverAlpha, 51 + hoverAlpha).getRGB());
-        rect(context, fill ? ClickGuiModule.getInstance().getColor((b1 ? 50 : 100) + hoverAlpha2, scaledTime) : unfilledColor);
-
+        int filledAlpha = (b1 ? 50 : 100) + hoverAlpha2;
+        if (fill && ClickGuiModule.getInstance().isGradient())
+        {
+            RenderManager.fillGradientQuad(context, ix, iy, ix + (width * ClickGuiModule.CLICK_GUI_SCALE), iy + (height * ClickGuiModule.CLICK_GUI_SCALE), ClickGuiModule.getInstance().getColor(filledAlpha, scaledTime), ClickGuiModule.getInstance().getGradient(filledAlpha, scaledTime), true);
+        }
+        else
+        {
+            rect(context, fill ? ClickGuiModule.getInstance().getColor(filledAlpha, scaledTime) : unfilledColor);
+        }
         int whiteText = -1;
         int grayText = 0xFFAAAAAA;
         int colorText = scaledTime > 0.99f ? whiteText : grayText;
@@ -153,7 +157,6 @@ public class ModuleButton extends Button
         {
             colorText = b1 ? grayText : whiteText;
         }
-
         drawStringScaled(context, module.getName(), ix + (2.0f * ClickGuiModule.CLICK_GUI_SCALE), iy + (3.5f * ClickGuiModule.CLICK_GUI_SCALE), colorText);
         if (settingsAnimation.getFactor() > 0.01f)
         {
@@ -172,7 +175,6 @@ public class ModuleButton extends Button
                 }
             }
             boolean canScissor = ClickGuiModule.getInstance().getScaleFactor() == 1.0F;
-
             if (canScissor)
             {
                 enableScissor(x, off - ClickGuiModule.CLICK_GUI_SCALE, x + (width * ClickGuiModule.CLICK_GUI_SCALE), off + (3.0f * ClickGuiModule.CLICK_GUI_SCALE + (fheight * settingsAnimation.getFactor())));
@@ -190,9 +192,22 @@ public class ModuleButton extends Button
             }
             if (fill)
             {
-                fill(context, ix, y + (height * ClickGuiModule.CLICK_GUI_SCALE), ClickGuiModule.CLICK_GUI_SCALE, off - (y + (height * ClickGuiModule.CLICK_GUI_SCALE)) + ClickGuiModule.CLICK_GUI_SCALE, ClickGuiModule.getInstance().getColor(100 + hoverAlpha2, scaledTime));
-                fill(context, ix + (width * ClickGuiModule.CLICK_GUI_SCALE) - ClickGuiModule.CLICK_GUI_SCALE, y + (height * ClickGuiModule.CLICK_GUI_SCALE), ClickGuiModule.CLICK_GUI_SCALE, off - (y + (height * ClickGuiModule.CLICK_GUI_SCALE)) + ClickGuiModule.CLICK_GUI_SCALE, ClickGuiModule.getInstance().getColor(100 + hoverAlpha2, scaledTime));
-                fill(context, ix, off + ClickGuiModule.CLICK_GUI_SCALE, width * ClickGuiModule.CLICK_GUI_SCALE, ClickGuiModule.CLICK_GUI_SCALE, ClickGuiModule.getInstance().getColor(100 + hoverAlpha2, scaledTime));
+                float lineTop = y + (height * ClickGuiModule.CLICK_GUI_SCALE);
+                float lineHeight = off - (y + (height * ClickGuiModule.CLICK_GUI_SCALE)) + ClickGuiModule.CLICK_GUI_SCALE;
+                if (ClickGuiModule.getInstance().isGradient())
+                {
+                    int start = ClickGuiModule.getInstance().getColor(100 + hoverAlpha2, scaledTime);
+                    int end = ClickGuiModule.getInstance().getGradient(100 + hoverAlpha2, scaledTime);
+                    fill(context, ix, lineTop, ClickGuiModule.CLICK_GUI_SCALE, lineHeight, start);
+                    fill(context, ix + (width * ClickGuiModule.CLICK_GUI_SCALE) - ClickGuiModule.CLICK_GUI_SCALE, lineTop, ClickGuiModule.CLICK_GUI_SCALE, lineHeight, end);
+                    RenderManager.fillGradientQuad(context, ix, off + ClickGuiModule.CLICK_GUI_SCALE, ix + (width * ClickGuiModule.CLICK_GUI_SCALE), off + ClickGuiModule.CLICK_GUI_SCALE + ClickGuiModule.CLICK_GUI_SCALE, start, end, true);
+                }
+                else
+                {
+                    fill(context, ix, lineTop, ClickGuiModule.CLICK_GUI_SCALE, lineHeight, ClickGuiModule.getInstance().getColor(100 + hoverAlpha2, scaledTime));
+                    fill(context, ix + (width * ClickGuiModule.CLICK_GUI_SCALE) - ClickGuiModule.CLICK_GUI_SCALE, lineTop, ClickGuiModule.CLICK_GUI_SCALE, lineHeight, ClickGuiModule.getInstance().getColor(100 + hoverAlpha2, scaledTime));
+                    fill(context, ix, off + ClickGuiModule.CLICK_GUI_SCALE, width * ClickGuiModule.CLICK_GUI_SCALE, ClickGuiModule.CLICK_GUI_SCALE, ClickGuiModule.getInstance().getColor(100 + hoverAlpha2, scaledTime));
+                }
             }
             if (canScissor)
             {
@@ -245,7 +260,6 @@ public class ModuleButton extends Button
                 open = !open;
                 settingsAnimation.setState(open);
             }
-
             if (ClickGuiModule.getInstance().getSounds())
             {
                 Managers.SOUND.playSound(SoundManager.GUI_CLICK);

@@ -21,16 +21,14 @@ import org.lwjgl.glfw.GLFW;
  */
 public class ClickGuiModule extends ToggleModule
 {
-
     private static ClickGuiModule INSTANCE;
-
-    // Config<Boolean> gradientConfig = register(new BooleanConfig("Gradient", "Adds a gradient to the elements", false));
+    //
+    Config<Boolean> gradientConfig = register(new BooleanConfig("Gradient", "Adds a gradient to the elements", false));
     Config<Boolean> blurConfig = register(new BooleanConfig("Blur", "Adds a blur background to the panels", false));
     Config<Float> scaleConfig = register(new NumberConfig<>("Scale", "The gui scale", 0.5f, 1.0f, 3.0f));
     Config<Integer> scrollSpeedConfig = register(new NumberConfig<>("ScrollSpeed", "The speed of GUI scrolling", 5, 30, 100));
     Config<Boolean> soundsConfig = register(new BooleanConfig("Sounds", "Click sounds", true));
     Config<Boolean> descriptionsConfig = register(new BooleanConfig("Descriptions", "Shows feature descriptions", true));
-
     public static ClickGuiScreen CLICK_GUI_SCREEN;
     public static float CLICK_GUI_SCALE = 1.0f;
     private final Animation openCloseAnimation = new Animation(false, 400, Easing.BACK_OUT);
@@ -74,7 +72,6 @@ public class ClickGuiModule extends ToggleModule
         transparencyAnimation.setState(true);
         openCloseAnimation.reset();
         transparencyAnimation.reset();
-
         mc.setScreen(CLICK_GUI_SCREEN);
     }
 
@@ -125,42 +122,42 @@ public class ClickGuiModule extends ToggleModule
         return ColorsModule.getInstance().getColor((int) (a * alpha * openCloseAnimation.getFactor())).getRGB();
     }
 
-//    public int getGradient()
-//    {
-//        return gradientConfig.getValue() ? ColorsModule.getInstance().getGradient((int) (100 * openCloseAnimation.getFactor())).getRGB() : getColor();
-//    }
-//
-//    public int getGradient(int a)
-//    {
-//        return gradientConfig.getValue() ? ColorsModule.getInstance().getGradient((int) (a * openCloseAnimation.getFactor())).getRGB() : getColor(a);
-//    }
-//
-//    public int getGradient(float alpha)
-//    {
-//        return gradientConfig.getValue() ? ColorsModule.getInstance().getGradient((int) (100 * alpha * openCloseAnimation.getFactor())).getRGB() : getColor(alpha);
-//    }
-//
-//    public int getGradient(int a, float alpha)
-//    {
-//        return gradientConfig.getValue() ? ColorsModule.getInstance().getGradient((int) (a * alpha * openCloseAnimation.getFactor())).getRGB() : getColor(a, alpha);
-//    }
+    public boolean isGradient()
+    {
+        return gradientConfig.getValue();
+    }
+
+    public int getGradient()
+    {
+        return gradientConfig.getValue() ? ColorsModule.getInstance().getGradient((int) (100 * openCloseAnimation.getFactor())).getRGB() : getColor();
+    }
+
+    public int getGradient(int a)
+    {
+        return gradientConfig.getValue() ? ColorsModule.getInstance().getGradient((int) (a * openCloseAnimation.getFactor())).getRGB() : getColor(a);
+    }
+
+    public int getGradient(float alpha)
+    {
+        return gradientConfig.getValue() ? ColorsModule.getInstance().getGradient((int) (100 * alpha * openCloseAnimation.getFactor())).getRGB() : getColor(alpha);
+    }
+
+    public int getGradient(int a, float alpha)
+    {
+        return gradientConfig.getValue() ? ColorsModule.getInstance().getGradient((int) (a * alpha * openCloseAnimation.getFactor())).getRGB() : getColor(a, alpha);
+    }
 
     // Applies a transparency to a color
     public int fixTransparency(int color)
     {
         float alpha = getAlpha();
-
         if (alpha == 1.0F)
         {
             return color;
         }
-
         float colorAlpha = (color >> 24) & 0xFF;
-
         alpha = Math.max(0.0F, Math.min(1.0F, alpha));
-
         int colorAlphaInt = Math.max(10, (int) (colorAlpha * alpha));
-
         return (colorAlphaInt << 24) | (color & 0xFFFFFF);
     }
 

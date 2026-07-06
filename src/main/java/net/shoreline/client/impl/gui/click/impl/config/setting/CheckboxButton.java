@@ -20,7 +20,6 @@ import java.awt.*;
  */
 public class CheckboxButton extends ConfigButton<Boolean>
 {
-
     /**
      * @param frame
      * @param config
@@ -53,8 +52,16 @@ public class CheckboxButton extends ConfigButton<Boolean>
             hoverAnimation.setState(state);
         }
         int hoverAlpha = (int) (80 * MathHelper.clamp(hoverAnimation.getFactor(), 0.0f, 1.0f));
-
-        rect(context, checkboxAnimation.getFactor() > 0.01f ? ClickGuiModule.getInstance().getColor(100 + hoverAlpha, (float) checkboxAnimation.getFactor()) : new Color(hoverAlpha, hoverAlpha, hoverAlpha, hoverAlpha).getRGB());
+        if (checkboxAnimation.getFactor() > 0.01f && ClickGuiModule.getInstance().isGradient())
+        {
+            int start = ClickGuiModule.getInstance().getColor((int) ((100 + hoverAlpha) * 0.6f), (float) checkboxAnimation.getFactor());
+            int end = ClickGuiModule.getInstance().getGradient((int) ((100 + hoverAlpha) * 0.6f), (float) checkboxAnimation.getFactor());
+            RenderManager.fillGradientQuad(context, ix, iy, ix + (width * ClickGuiModule.CLICK_GUI_SCALE), iy + (height * ClickGuiModule.CLICK_GUI_SCALE), start, end, true);
+        }
+        else
+        {
+            rect(context, checkboxAnimation.getFactor() > 0.01f ? ClickGuiModule.getInstance().getColor(100 + hoverAlpha, (float) checkboxAnimation.getFactor()) : new Color(hoverAlpha, hoverAlpha, hoverAlpha, hoverAlpha).getRGB());
+        }
         int whiteText = -1;
         drawStringScaled(context, config.getName(), (ix + (2.0f * ClickGuiModule.CLICK_GUI_SCALE)), (iy + (4.0f * ClickGuiModule.CLICK_GUI_SCALE)), whiteText);
     }
@@ -73,7 +80,6 @@ public class CheckboxButton extends ConfigButton<Boolean>
             {
                 boolean val = config.getValue();
                 config.setValue(!val);
-
                 if (ClickGuiModule.getInstance().getSounds())
                 {
                     Managers.SOUND.playSound(SoundManager.GUI_CLICK);
@@ -90,7 +96,6 @@ public class CheckboxButton extends ConfigButton<Boolean>
     @Override
     public void mouseReleased(double mouseX, double mouseY, int button)
     {
-
     }
 
     /**
@@ -101,13 +106,10 @@ public class CheckboxButton extends ConfigButton<Boolean>
     @Override
     public void keyPressed(int keyCode, int scanCode, int modifiers)
     {
-
     }
 
     @Override
     public void charTyped(char character, int modifiers)
     {
-
     }
-
 }

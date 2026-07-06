@@ -49,8 +49,20 @@ public class CategoryFrame extends Frame implements Serializable<CategoryFrame>
     private boolean drag;
     //
     private final Animation categoryAnimation = new Animation(false, 200, Easing.CUBIC_IN_OUT);
-
     private SearchButton searchButton;
+
+    private static final float CATEGORY_GRADIENT_STRENGTH = 0.8f;
+
+    private int blendColor(int c1, int c2, float t)
+    {
+        int a1 = (c1 >> 24) & 0xFF, r1 = (c1 >> 16) & 0xFF, g1 = (c1 >> 8) & 0xFF, b1 = c1 & 0xFF;
+        int a2 = (c2 >> 24) & 0xFF, r2 = (c2 >> 16) & 0xFF, g2 = (c2 >> 8) & 0xFF, b2 = c2 & 0xFF;
+        int a = (int) (a1 + (a2 - a1) * t);
+        int r = (int) (r1 + (r2 - r1) * t);
+        int g = (int) (g1 + (g2 - g1) * t);
+        int b = (int) (b1 + (b2 - b1) * t);
+        return (a << 24) | (r << 16) | (g << 8) | b;
+    }
 
     /**
      * @param x
@@ -134,15 +146,22 @@ public class CategoryFrame extends Frame implements Serializable<CategoryFrame>
                 }
             }
         }
-        rect(context, ClickGuiModule.getInstance().getColor(1.7f));
-
+        if (ClickGuiModule.getInstance().isGradient())
+        {
+            int start = ClickGuiModule.getInstance().getColor(1.7f);
+            int end = blendColor(start, ClickGuiModule.getInstance().getGradient(1.7f), CATEGORY_GRADIENT_STRENGTH);
+            RenderManager.fillGradientQuad(context, x, y, x + (width * ClickGuiModule.CLICK_GUI_SCALE), y + (height * ClickGuiModule.CLICK_GUI_SCALE), start, end, true);
+        }
+        else
+        {
+            rect(context, ClickGuiModule.getInstance().getColor(1.7f));
+        }
         int whiteText = -1;
         drawStringScaled(context, name, x + (3.0f * ClickGuiModule.CLICK_GUI_SCALE), y + (4.0f * ClickGuiModule.CLICK_GUI_SCALE), whiteText);
         if (categoryAnimation.getFactor() > 0.01f)
         {
             // Enabling scissor during the animation zoom in process causes some weird visual bugs
             boolean canScissor = ClickGuiModule.getInstance().getScaleFactor() == 1.0F;
-
             float y1 = y;
             if (searchButton != null)
             {
@@ -152,10 +171,8 @@ public class CategoryFrame extends Frame implements Serializable<CategoryFrame>
             {
                 enableScissor(x, y + (height * ClickGuiModule.CLICK_GUI_SCALE), x + (width * ClickGuiModule.CLICK_GUI_SCALE), y + (ClickGuiModule.CLICK_GUI_SCALE * height) + fheight * categoryAnimation.getFactor());
             }
-
             int fillColor = ClickGuiModule.getInstance().fixTransparency(0x77000000);
             fill(context, x, y + (height * ClickGuiModule.CLICK_GUI_SCALE), (width * ClickGuiModule.CLICK_GUI_SCALE), fheight, fillColor);
-
             if (ClickGuiModule.getInstance().getBlur() && ClickGuiModule.getInstance().getScaleFactor() == 1.0f)
             {
                 mc.options.getMenuBackgroundBlurriness().setValue(7);
@@ -163,14 +180,12 @@ public class CategoryFrame extends Frame implements Serializable<CategoryFrame>
                 mc.getFramebuffer().beginWrite(false);
                 mc.options.getMenuBackgroundBlurriness().setValue(5);
             }
-
             if (searchButton != null)
             {
                 searchButton.render(context, x + ClickGuiModule.CLICK_GUI_SCALE,
                         y + (height * ClickGuiModule.CLICK_GUI_SCALE) + (4.0f * ClickGuiModule.CLICK_GUI_SCALE),
                         mouseX, mouseY, delta);
             }
-
             off = y1 + (height * ClickGuiModule.CLICK_GUI_SCALE) + ClickGuiModule.CLICK_GUI_SCALE;
             inner = off;
             for (ModuleButton moduleButton : moduleButtons)
@@ -179,7 +194,6 @@ public class CategoryFrame extends Frame implements Serializable<CategoryFrame>
                 off += (float) ((moduleButton.getHeight() + ClickGuiModule.CLICK_GUI_SCALE) * categoryAnimation.getFactor());
                 inner += moduleButton.getHeight() + ClickGuiModule.CLICK_GUI_SCALE;
             }
-
             if (canScissor)
             {
                 disableScissor();
@@ -203,7 +217,6 @@ public class CategoryFrame extends Frame implements Serializable<CategoryFrame>
         {
             open = !open;
             categoryAnimation.setState(open);
-
             if (ClickGuiModule.getInstance().getSounds())
             {
                 Managers.SOUND.playSound(SoundManager.GUI_CLICK);
